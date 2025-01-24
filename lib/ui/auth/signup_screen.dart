@@ -1,7 +1,6 @@
 
 import 'package:flutter/material.dart';
 
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:real_time_db_firebase/ui/auth/login_screen.dart';
 import '../../widgets/round_button.dart';
 
@@ -20,7 +19,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
 
-  final  _auth = FirebaseAuth.instance;
 
   @override
   void dispose() {
