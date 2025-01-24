@@ -8,7 +8,6 @@ import '../../widgets/round_button.dart';
 import '../firebase_database/post_screen.dart';
 import 'phone_auth/login_with_phone_number.dart';
 
-
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -17,59 +16,57 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-
-  bool loading = false ;
+  bool _loading = false;
   final _formKey = GlobalKey<FormState>();
-  final emailController = TextEditingController();
-  final passwordController = TextEditingController();
-
-  final _auth = FirebaseAuth.instance ;
-
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   @override
   void dispose() {
-    // TODO: implement dispose
+    _emailController.dispose();
+    _passwordController.dispose();
     super.dispose();
-    emailController.dispose();
-    passwordController.dispose();
-
   }
 
-  void login(){
+  Future<void> _login() async {
+    if (!_formKey.currentState!.validate()) return;
+
     setState(() {
-      loading = true ;
+      _loading = true;
     });
-    _auth.signInWithEmailAndPassword(
-        email: emailController.text,
-        password: passwordController.text.toString()).then((value){
-      Utils().toastMessage(value.user!.email.toString());
-      Navigator.push(context,
-          MaterialPageRoute(builder: (context) => PostScreen())
-      );
-      setState(() {
-        loading = false ;
-      });
-    }).onError((error, stackTrace){
-      debugPrint(error.toString());
-      Utils().toastMessage(error.toString());
-      setState(() {
-        loading = false ;
-      });
-    });
-  }
 
+    try {
+      final UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
+
+      Utils().toastMessage('Welcome ${userCredential.user!.email}');
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const PostScreen()),
+      );
+    } on FirebaseAuthException catch (e) {
+      Utils().toastMessage(e.message ?? 'An error occurred');
+    } finally {
+      setState(() {
+        _loading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
-      onWillPop: ()async{
+      onWillPop: () async {
         SystemNavigator.pop();
         return true;
       },
       child: Scaffold(
         appBar: AppBar(
           automaticallyImplyLeading: false,
-          title: Text('Login'),
+          title: const Text('Login'),
         ),
         body: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -78,97 +75,95 @@ class _LoginScreenState extends State<LoginScreen> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Form(
-                  key: _formKey,
-                  child: Column(
-                    children: [
-                      TextFormField(
-                        keyboardType: TextInputType.emailAddress,
-                        controller: emailController,
-                        decoration: const  InputDecoration(
-                            hintText: 'Email',
-                            prefixIcon: Icon(Icons.alternate_email)
-                        ),
-                        validator: (value){
-                          if(value!.isEmpty){
-                            return 'Enter email';
-                          }
-                          return null ;
-                        },
+                key: _formKey,
+                child: Column(
+                  children: [
+                    TextFormField(
+                      keyboardType: TextInputType.emailAddress,
+                      controller: _emailController,
+                      decoration: const InputDecoration(
+                        hintText: 'Email',
+                        prefixIcon: Icon(Icons.alternate_email),
                       ),
-                      const SizedBox(height: 10,),
-                      TextFormField(
-                        keyboardType: TextInputType.text,
-                        controller: passwordController,
-                        obscureText: true,
-                        decoration: const  InputDecoration(
-                            hintText: 'Password',
-                            prefixIcon: Icon(Icons.lock_open)
-                        ),
-                        validator: (value){
-                          if(value!.isEmpty){
-                            return 'Enter password';
-                          }
-                          return null ;
-                        },
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Enter email';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 10),
+                    TextFormField(
+                      keyboardType: TextInputType.text,
+                      controller: _passwordController,
+                      obscureText: true,
+                      decoration: const InputDecoration(
+                        hintText: 'Password',
+                        prefixIcon: Icon(Icons.lock_open),
                       ),
-
-                    ],
-                  )
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Enter password';
+                        }
+                        return null;
+                      },
+                    ),
+                  ],
+                ),
               ),
-              const SizedBox(height: 50,),
+              const SizedBox(height: 50),
               RoundButton(
                 title: 'Login',
-                loading: loading,
-                onTap: (){
-                  if(_formKey.currentState!.validate()){
-                    login();
-                  }
-                },
+                loading: _loading,
+                onTap: _login,
               ),
               Align(
                 alignment: Alignment.bottomRight,
-                child: TextButton(onPressed: (){
-                  Navigator.push(context,
-                      MaterialPageRoute(
-                          builder:(context) => ForgotPasswordScreen())
-                  );
-                },
-                    child: Text('Forgot Password?')),
+                child: TextButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const ForgotPasswordScreen()),
+                    );
+                  },
+                  child: const Text('Forgot Password?'),
+                ),
               ),
-              const SizedBox(height: 30,),
+              const SizedBox(height: 30),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const Text("Don't have an account?"),
-                  TextButton(onPressed: (){
-                    Navigator.push(context,
-                        MaterialPageRoute(
-                            builder:(context) => SignUpScreen())
-                    );
-                  },
-                      child: Text('Sign up'))
+                  TextButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const SignUpScreen()),
+                      );
+                    },
+                    child: const Text('Sign up'),
+                  ),
                 ],
               ),
-              const SizedBox(height: 30,),
+              const SizedBox(height: 30),
               InkWell(
-                onTap: (){
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => LoginWithPhoneNumber()));
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const LoginWithPhoneNumber()),
+                  );
                 },
                 child: Container(
                   height: 50,
                   decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(50),
-                      border: Border.all(
-                          color: Colors.black
-                      )
+                    borderRadius: BorderRadius.circular(50),
+                    border: Border.all(color: Colors.black),
                   ),
-                  child: Center(
+                  child: const Center(
                     child: Text('Login with phone'),
                   ),
                 ),
-              )
-
+              ),
             ],
           ),
         ),
