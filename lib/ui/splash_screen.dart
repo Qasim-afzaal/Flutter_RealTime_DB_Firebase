@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:real_time_db_firebase/firebase_services/splash_services.dart';
 
-
-
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -11,20 +9,26 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
-
-  SplashServices splashScreen = SplashServices();
+  final SplashServices _splashServices = SplashServices();
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-    splashScreen.isLogin(context);
+    _navigateToNextScreen();
   }
+
+  void _navigateToNextScreen() {
+    _splashServices.isLogin(context);
+  }
+
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
       body: Center(
-        child: Text('Firebase Tutorials' , style: TextStyle(fontSize: 30),),
+        child: Text(
+          'Firebase Tutorials',
+          style: TextStyle(fontSize: 30),
+        ),
       ),
     );
   }
