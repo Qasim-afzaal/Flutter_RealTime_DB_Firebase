@@ -128,4 +128,4 @@ Future<void> pickAndUploadImage() async {
 ## 🔖 **License**  
 
 This app is open source and licensed under the **MIT License**. Feel free to build on it, share, and innovate to make the world a little more connected! 🌍  
-```
+
