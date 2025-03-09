@@ -4,10 +4,8 @@ import 'package:real_time_db_firebase/utils/utils.dart';
 import '../../../widgets/round_button.dart';
 import '../../firebase_database/post_screen.dart';
 
-
-
 class VerifyCodeScreen extends StatefulWidget {
-  final String verificationId ;
+  final String verificationId;
   const VerifyCodeScreen({super.key, required this.verificationId});
 
   @override
@@ -15,54 +13,60 @@ class VerifyCodeScreen extends StatefulWidget {
 }
 
 class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
-  bool loading = false ;
-  final verificationCodeController = TextEditingController();
-  final auth = FirebaseAuth.instance ;
+  bool loading = false;
+  final TextEditingController verificationCodeController = TextEditingController();
+  final FirebaseAuth auth = FirebaseAuth.instance;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Verify'),
-      ),
-      body: Padding(
+      appBar: AppBar(title: const Text('Verify Code')),
+      body: SingleChildScrollView(
+        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
         padding: const EdgeInsets.symmetric(horizontal: 20),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            SizedBox(height: 80,),
-
+            const SizedBox(height: 80),
             TextFormField(
               controller: verificationCodeController,
               keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                  hintText: '6 digit code'
+              decoration: const InputDecoration(
+                hintText: 'Enter 6-digit code',
+                border: OutlineInputBorder(),
               ),
             ),
-            SizedBox(height: 80,),
-            RoundButton(title: 'Verify',loading: loading, onTap: ()async{
+            const SizedBox(height: 50),
+            RoundButton(
+              title: 'Verify',
+              loading: loading,
+              onTap: () async {
+                if (verificationCodeController.text.trim().length != 6) {
+                  Utils.showToast('Enter a valid 6-digit code');
+                  return;
+                }
 
-              setState(() {
-                loading = true ;
-              });
-              final crendital = PhoneAuthProvider.credential(
-                  verificationId: widget.verificationId, 
-                  smsCode: verificationCodeController.text.toString()
-              );
-              
-              try{
-                
-                await auth.signInWithCredential(crendital);
-                
-                Navigator.push(context, MaterialPageRoute(builder: (context) => PostScreen()));
-                
-              }catch(e){
-                setState(() {
-                  loading = false ;
-                });
-                Utils.showToast(e.toString());
-              }
-            })
+                setState(() => loading = true);
+                final credential = PhoneAuthProvider.credential(
+                  verificationId: widget.verificationId,
+                  smsCode: verificationCodeController.text.trim(),
+                );
 
+                try {
+                  await auth.signInWithCredential(credential);
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => const PostScreen()),
+                  );
+                } on FirebaseAuthException catch (e) {
+                  Utils.showToast(e.message ?? 'Verification failed');
+                } catch (e) {
+                  Utils.showToast('An unexpected error occurred');
+                } finally {
+                  setState(() => loading = false);
+                }
+              },
+            ),
           ],
         ),
       ),
