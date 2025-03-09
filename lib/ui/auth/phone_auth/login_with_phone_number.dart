@@ -74,7 +74,7 @@ class _LoginWithPhoneNumberState extends State<LoginWithPhoneNumber> {
                             String errorMessage = e.code == 'invalid-phone-number'
                                 ? 'The phone number entered is invalid.'
                                 : 'Verification failed. Please try again later.';
-                            Utils().toastMessage(errorMessage);
+                            Utils.showToast(errorMessage);
                           },
                           codeSent: (String verificationId, int? token) {
                             Navigator.push(
@@ -89,7 +89,7 @@ class _LoginWithPhoneNumberState extends State<LoginWithPhoneNumber> {
                             });
                           },
                           codeAutoRetrievalTimeout: (e) {
-                            Utils().toastMessage(
+                            Utils.showToast(
                                 'The OTP process timed out. Please try again.');
                             setState(() {
                               loading = false;
