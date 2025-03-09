@@ -42,13 +42,13 @@ class _LoginScreenState extends State<LoginScreen> {
         password: _passwordController.text.trim(),
       );
 
-      Utils().toastMessage('Welcome ${userCredential.user!.email}');
+      Utils.showToast('Welcome ${userCredential.user!.email}');
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const PostScreen()),
       );
     } on FirebaseAuthException catch (e) {
-      Utils().toastMessage(e.message ?? 'An error occurred');
+      Utils.showToast(e.message ?? 'An error occurred');
     } finally {
       setState(() {
         _loading = false;
