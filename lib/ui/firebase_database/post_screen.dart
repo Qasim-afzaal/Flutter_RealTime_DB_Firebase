@@ -14,24 +14,45 @@ class PostScreen extends StatefulWidget {
 }
 
 class _PostScreenState extends State<PostScreen> {
-  final auth = FirebaseAuth.instance;
-  final ref = FirebaseDatabase.instance.ref('Post');
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final DatabaseReference _ref = FirebaseDatabase.instance.ref('Post');
+
+  Future<void> _signOut() async {
+    try {
+      await _auth.signOut();
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const LoginScreen()));
+    } catch (error) {
+      Utils.showToast(error.toString());
+    }
+  }
+
+  Future<void> _updatePost(String postId) async {
+    try {
+      await _ref.child(postId).update({'title': 'nice world'});
+      Utils.showToast('Post updated successfully.');
+    } catch (error) {
+      Utils.showToast(error.toString());
+    }
+  }
+
+  Future<void> _deletePost(String postId) async {
+    try {
+      await _ref.child(postId).remove();
+      Utils.showToast('Post deleted successfully.');
+    } catch (error) {
+      Utils.showToast(error.toString());
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Post'),
+        title: const Text('Posts'),
         actions: [
           IconButton(
-            onPressed: () {
-              auth.signOut().then((value) {
-                Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => LoginScreen()));
-              }).catchError((error) {
-                Utils.showToast(error.toString());
-              });
-            },
-            icon: Icon(Icons.logout_outlined),
+            onPressed: _signOut,
+            icon: const Icon(Icons.logout_outlined),
           ),
         ],
       ),
@@ -39,45 +60,42 @@ class _PostScreenState extends State<PostScreen> {
         children: [
           Expanded(
             child: FirebaseAnimatedList(
-              query: ref,
-              defaultChild: Center(child: CircularProgressIndicator()),
+              query: _ref,
+              defaultChild: const Center(child: CircularProgressIndicator()),
               itemBuilder: (context, snapshot, animation, index) {
+                final String? postId = snapshot.child('id').value?.toString();
+                final String title = snapshot.child('title').value?.toString() ?? 'No title';
+
+                if (postId == null) {
+                  return const SizedBox.shrink();
+                }
+
                 return ListTile(
-                  title: Text(snapshot.child('title').value.toString()),
-                  subtitle: Text(snapshot.child('id').value.toString()),
-                  trailing: PopupMenuButton(
+                  title: Text(title),
+                  subtitle: Text(postId),
+                  trailing: PopupMenuButton<int>(
                     color: Colors.white,
                     elevation: 4,
-                    padding: EdgeInsets.zero,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(2))),
-                    icon: Icon(Icons.more_vert),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    icon: const Icon(Icons.more_vert),
+                    onSelected: (value) {
+                      if (value == 1) {
+                        _updatePost(postId);
+                      } else if (value == 2) {
+                        _deletePost(postId);
+                      }
+                    },
                     itemBuilder: (context) => [
-                      PopupMenuItem(
+                      const PopupMenuItem(
                         value: 1,
                         child: ListTile(
-                          onTap: () {
-                            Navigator.pop(context);
-                            ref.child(snapshot.child('id').value.toString()).update({'title': 'nice world'}).then((_) {
-                              Utils.showToast('Post updated successfully.');
-                            }).catchError((error) {
-                              Utils.showToast(error.toString());
-                            });
-                          },
                           leading: Icon(Icons.edit),
                           title: Text('Edit'),
                         ),
                       ),
-                      PopupMenuItem(
+                      const PopupMenuItem(
                         value: 2,
                         child: ListTile(
-                          onTap: () {
-                            Navigator.pop(context);
-                            ref.child(snapshot.child('id').value.toString()).remove().then((_) {
-                              Utils.showToast('Post deleted successfully.');
-                            }).catchError((error) {
-                              Utils.showToast(error.toString());
-                            });
-                          },
                           leading: Icon(Icons.delete_outline),
                           title: Text('Delete'),
                         ),
@@ -91,10 +109,8 @@ class _PostScreenState extends State<PostScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => AddPostScreen()));
-        },
-        child: Icon(Icons.add),
+        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AddPostScreen())),
+        child: const Icon(Icons.add),
       ),
     );
   }
