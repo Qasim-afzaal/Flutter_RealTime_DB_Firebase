@@ -11,20 +11,17 @@ class ForgotPasswordScreen extends StatefulWidget {
 }
 
 class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
-  final TextEditingController _emailController = TextEditingController();
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final _emailController = TextEditingController();
+  final _auth = FirebaseAuth.instance;
 
   @override
   void dispose() {
-    
     _emailController.dispose();
     super.dispose();
   }
 
-
   void _resetPassword() async {
     final email = _emailController.text.trim();
-
     if (email.isEmpty) {
       Utils.showToast('Please enter your email address');
       return;
@@ -32,19 +29,16 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
     try {
       await _auth.sendPasswordResetEmail(email: email);
-      Utils.showToast(
-          'We have sent you an email to recover your password. Please check your inbox.');
-    } catch (error) {
-      Utils.showToast(error.toString());
+      Utils.showToast('Password reset email sent. Check your inbox.');
+    } catch (e) {
+      Utils.showToast(e.toString());
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Forgot Password'),
-      ),
+      appBar: AppBar(title: const Text('Forgot Password')),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20),
         child: Column(
@@ -61,10 +55,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               textInputAction: TextInputAction.done,
             ),
             const SizedBox(height: 40),
-            RoundButton(
-              title: 'Reset Password',
-              onTap: _resetPassword,
-            ),
+            RoundButton(title: 'Reset Password', onTap: _resetPassword),
           ],
         ),
       ),
