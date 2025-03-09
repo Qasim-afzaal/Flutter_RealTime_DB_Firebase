@@ -4,7 +4,6 @@ import 'package:real_time_db_firebase/ui/auth/phone_auth/verify_code.dart';
 import 'package:real_time_db_firebase/utils/utils.dart';
 import 'package:real_time_db_firebase/widgets/round_button.dart';
 
-
 class LoginWithPhoneNumber extends StatefulWidget {
   const LoginWithPhoneNumber({super.key});
 
@@ -14,9 +13,9 @@ class LoginWithPhoneNumber extends StatefulWidget {
 
 class _LoginWithPhoneNumberState extends State<LoginWithPhoneNumber> {
   bool loading = false;
-  final phoneNumberController = TextEditingController();
-  final auth = FirebaseAuth.instance;
-  final _formKey = GlobalKey<FormState>();
+  final TextEditingController phoneNumberController = TextEditingController();
+  final FirebaseAuth auth = FirebaseAuth.instance;
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   String? validatePhoneNumber(String value) {
     if (value.isEmpty || !RegExp(r'^\+[1-9]\d{1,14}$').hasMatch(value)) {
@@ -26,12 +25,49 @@ class _LoginWithPhoneNumberState extends State<LoginWithPhoneNumber> {
   }
 
   @override
+  void dispose() {
+    phoneNumberController.dispose();
+    super.dispose();
+  }
+
+  void _sendVerificationCode() {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => loading = true);
+
+    auth.verifyPhoneNumber(
+      phoneNumber: phoneNumberController.text.trim(),
+      verificationCompleted: (_) {
+        setState(() => loading = false);
+      },
+      verificationFailed: (FirebaseAuthException e) {
+        setState(() => loading = false);
+        String errorMessage = e.code == 'invalid-phone-number'
+            ? 'The phone number entered is invalid.'
+            : 'Verification failed. Please try again later.';
+        Utils.showToast(errorMessage);
+      },
+      codeSent: (String verificationId, int? resendToken) {
+        setState(() => loading = false);
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => VerifyCodeScreen(verificationId: verificationId),
+          ),
+        );
+      },
+      codeAutoRetrievalTimeout: (String verificationId) {
+        Utils.showToast('OTP auto-retrieval timed out. Enter the code manually.');
+      },
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Login with Phone'),
-      ),
-      body: Padding(
+      appBar: AppBar(title: const Text('Login with Phone')),
+      body: SingleChildScrollView(
+        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
         padding: const EdgeInsets.symmetric(horizontal: 20),
         child: Column(
           children: [
@@ -46,59 +82,15 @@ class _LoginWithPhoneNumberState extends State<LoginWithPhoneNumber> {
                   labelText: 'Phone Number',
                   border: OutlineInputBorder(),
                 ),
-                validator: (value) => validatePhoneNumber(value!),
+                validator: (value) => validatePhoneNumber(value ?? ''),
               ),
             ),
             const SizedBox(height: 80),
-            loading
-                ? const CircularProgressIndicator()
-                : RoundButton(
-                    title: 'Login',
-                    loading: loading,
-                    onTap: () {
-                      if (_formKey.currentState!.validate()) {
-                        setState(() {
-                          loading = true;
-                        });
-                        auth.verifyPhoneNumber(
-                          phoneNumber: phoneNumberController.text,
-                          verificationCompleted: (_) {
-                            setState(() {
-                              loading = false;
-                            });
-                          },
-                          verificationFailed: (e) {
-                            setState(() {
-                              loading = false;
-                            });
-                            String errorMessage = e.code == 'invalid-phone-number'
-                                ? 'The phone number entered is invalid.'
-                                : 'Verification failed. Please try again later.';
-                            Utils.showToast(errorMessage);
-                          },
-                          codeSent: (String verificationId, int? token) {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => VerifyCodeScreen(
-                                    verificationId: verificationId),
-                              ),
-                            );
-                            setState(() {
-                              loading = false;
-                            });
-                          },
-                          codeAutoRetrievalTimeout: (e) {
-                            Utils.showToast(
-                                'The OTP process timed out. Please try again.');
-                            setState(() {
-                              loading = false;
-                            });
-                          },
-                        );
-                      }
-                    },
-                  ),
+            RoundButton(
+              title: 'Login',
+              loading: loading,
+              onTap: _sendVerificationCode,
+            ),
           ],
         ),
       ),
