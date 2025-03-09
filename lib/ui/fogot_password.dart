@@ -16,26 +16,26 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
   @override
   void dispose() {
-    // Dispose the controller to avoid memory leaks
+    
     _emailController.dispose();
     super.dispose();
   }
 
-  /// Handles the password reset process
+
   void _resetPassword() async {
     final email = _emailController.text.trim();
 
     if (email.isEmpty) {
-      Utils().toastMessage('Please enter your email address');
+      Utils.showToast('Please enter your email address');
       return;
     }
 
     try {
       await _auth.sendPasswordResetEmail(email: email);
-      Utils().toastMessage(
+      Utils.showToast(
           'We have sent you an email to recover your password. Please check your inbox.');
     } catch (error) {
-      Utils().toastMessage(error.toString());
+      Utils.showToast(error.toString());
     }
   }
 
