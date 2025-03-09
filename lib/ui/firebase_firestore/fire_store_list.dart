@@ -28,7 +28,7 @@ class _ShowFireStorePostScreenState extends State<ShowFireStorePostScreen> {
         MaterialPageRoute(builder: (context) => const LoginScreen()),
       );
     } catch (error) {
-      Utils().toastMessage(error.toString());
+      Utils.showToast(error.toString());
     }
   }
 
@@ -36,9 +36,9 @@ class _ShowFireStorePostScreenState extends State<ShowFireStorePostScreen> {
   Future<void> _deleteUser(String userId) async {
     try {
       await _usersCollection.doc(userId).delete();
-      Utils().toastMessage("User deleted successfully.");
+      Utils.showToast("User deleted successfully.");
     } catch (error) {
-      Utils().toastMessage("Failed to delete user: $error");
+      Utils.showToast("Failed to delete user: $error");
     }
   }
 
@@ -46,9 +46,9 @@ class _ShowFireStorePostScreenState extends State<ShowFireStorePostScreen> {
   Future<void> _updateUserName(String userId, String newName) async {
     try {
       await _usersCollection.doc(userId).update({'full_name': newName});
-      Utils().toastMessage("User updated successfully.");
+      Utils.showToast("User updated successfully.");
     } catch (error) {
-      Utils().toastMessage("Failed to update user: $error");
+      Utils.showToast("Failed to update user: $error");
     }
   }
 
