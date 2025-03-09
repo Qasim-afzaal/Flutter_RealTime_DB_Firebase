@@ -9,15 +9,11 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
-  final SplashServices _splashServices = SplashServices();
+  final _splashServices = SplashServices();
 
   @override
   void initState() {
     super.initState();
-    _navigateToNextScreen();
-  }
-
-  void _navigateToNextScreen() {
     _splashServices.isLogin(context);
   }
 
