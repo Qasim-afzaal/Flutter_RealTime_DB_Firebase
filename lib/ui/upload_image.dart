@@ -34,17 +34,17 @@ class _UploadImageScreenState extends State<UploadImageScreen> {
           _selectedImage = File(pickedFile.path);
         });
       } else {
-        Utils().toastMessage('No image selected.');
+        Utils.showToast('No image selected.');
       }
     } catch (e) {
-      Utils().toastMessage('Error picking image: $e');
+      Utils.showToast('Error picking image: $e');
     }
   }
 
   /// Uploads the selected image to Firebase Storage and updates the database.
   Future<void> _uploadImage() async {
     if (_selectedImage == null) {
-      Utils().toastMessage('Please select an image first.');
+      Utils.showToast('Please select an image first.');
       return;
     }
 
@@ -62,9 +62,9 @@ class _UploadImageScreenState extends State<UploadImageScreen> {
         'title': downloadUrl,
       });
 
-      Utils().toastMessage('Image uploaded successfully.');
+      Utils.showToast('Image uploaded successfully.');
     } catch (e) {
-      Utils().toastMessage('Error uploading image: $e');
+      Utils.showToast('Error uploading image: $e');
     } finally {
       setState(() => isLoading = false);
     }
