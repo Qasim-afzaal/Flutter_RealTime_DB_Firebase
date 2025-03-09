@@ -21,18 +21,12 @@ class _UploadImageScreenState extends State<UploadImageScreen> {
   final firebase_storage.FirebaseStorage _storage = firebase_storage.FirebaseStorage.instance;
   final DatabaseReference _databaseRef = FirebaseDatabase.instance.ref('Post');
 
-  /// Picks an image from the gallery.
-  Future<void> _pickImageFromGallery() async {
+  Future<void> _pickImage() async {
     try {
-      final pickedFile = await _imagePicker.pickImage(
-        source: ImageSource.gallery,
-        imageQuality: 80,
-      );
+      final pickedFile = await _imagePicker.pickImage(source: ImageSource.gallery, imageQuality: 80);
 
       if (pickedFile != null) {
-        setState(() {
-          _selectedImage = File(pickedFile.path);
-        });
+        setState(() => _selectedImage = File(pickedFile.path));
       } else {
         Utils.showToast('No image selected.');
       }
@@ -41,7 +35,6 @@ class _UploadImageScreenState extends State<UploadImageScreen> {
     }
   }
 
-  /// Uploads the selected image to Firebase Storage and updates the database.
   Future<void> _uploadImage() async {
     if (_selectedImage == null) {
       Utils.showToast('Please select an image first.');
@@ -52,15 +45,10 @@ class _UploadImageScreenState extends State<UploadImageScreen> {
 
     try {
       final ref = _storage.ref('/uploads/${DateTime.now().millisecondsSinceEpoch}');
-      final uploadTask = ref.putFile(_selectedImage!);
-
-      final snapshot = await uploadTask;
+      final snapshot = await ref.putFile(_selectedImage!).whenComplete(() => null);
       final downloadUrl = await snapshot.ref.getDownloadURL();
 
-      await _databaseRef.child('1').set({
-        'id': '1212',
-        'title': downloadUrl,
-      });
+      await _databaseRef.child('1').set({'id': '1212', 'title': downloadUrl});
 
       Utils.showToast('Image uploaded successfully.');
     } catch (e) {
@@ -73,9 +61,7 @@ class _UploadImageScreenState extends State<UploadImageScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Upload Image'),
-      ),
+      appBar: AppBar(title: const Text('Upload Image')),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20),
         child: Column(
@@ -83,24 +69,18 @@ class _UploadImageScreenState extends State<UploadImageScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             GestureDetector(
-              onTap: _pickImageFromGallery,
+              onTap: _pickImage,
               child: Container(
                 height: 200,
                 width: 200,
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.black),
-                ),
+                decoration: BoxDecoration(border: Border.all(color: Colors.black)),
                 child: _selectedImage != null
                     ? Image.file(_selectedImage!, fit: BoxFit.cover)
                     : const Center(child: Icon(Icons.image)),
               ),
             ),
             const SizedBox(height: 40),
-            RoundButton(
-              title: 'Upload',
-              loading: isLoading,
-              onTap: _uploadImage,
-            ),
+            RoundButton(title: 'Upload', loading: isLoading, onTap: _uploadImage),
           ],
         ),
       ),
