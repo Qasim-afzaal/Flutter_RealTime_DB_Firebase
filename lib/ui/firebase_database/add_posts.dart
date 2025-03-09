@@ -23,7 +23,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
 
   Future<void> addPost() async {
     if (postController.text.trim().isEmpty) {
-      Utils().toastMessage('Please enter some text');
+      Utils.showToast('Please enter some text');
       return;
     }
 
@@ -37,10 +37,10 @@ class _AddPostScreenState extends State<AddPostScreen> {
         'title': postController.text.trim(),
         'id': id,
       });
-      Utils().toastMessage('Post added');
+      Utils.showToast('Post added');
       postController.clear();
     } catch (error) {
-      Utils().toastMessage(error.toString());
+      Utils.showToast(error.toString());
     } finally {
       setState(() {
         loading = false;
