@@ -28,7 +28,7 @@ class _PostScreenState extends State<PostScreen> {
               auth.signOut().then((value) {
                 Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => LoginScreen()));
               }).catchError((error) {
-                Utils().toastMessage(error.toString());
+                Utils.showToast(error.toString());
               });
             },
             icon: Icon(Icons.logout_outlined),
@@ -58,9 +58,9 @@ class _PostScreenState extends State<PostScreen> {
                           onTap: () {
                             Navigator.pop(context);
                             ref.child(snapshot.child('id').value.toString()).update({'title': 'nice world'}).then((_) {
-                              Utils().toastMessage('Post updated successfully.');
+                              Utils.showToast('Post updated successfully.');
                             }).catchError((error) {
-                              Utils().toastMessage(error.toString());
+                              Utils.showToast(error.toString());
                             });
                           },
                           leading: Icon(Icons.edit),
@@ -73,9 +73,9 @@ class _PostScreenState extends State<PostScreen> {
                           onTap: () {
                             Navigator.pop(context);
                             ref.child(snapshot.child('id').value.toString()).remove().then((_) {
-                              Utils().toastMessage('Post deleted successfully.');
+                              Utils.showToast('Post deleted successfully.');
                             }).catchError((error) {
-                              Utils().toastMessage(error.toString());
+                              Utils.showToast(error.toString());
                             });
                           },
                           leading: Icon(Icons.delete_outline),
