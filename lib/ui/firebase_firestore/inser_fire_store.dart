@@ -25,7 +25,7 @@ class _InsertFireStoreScreenState extends State<InsertFireStoreScreen> {
         MaterialPageRoute(builder: (context) => const LoginScreen()),
       );
     } catch (error) {
-      Utils().toastMessage(error.toString());
+      Utils.showToast(error.toString());
     }
   }
 
@@ -40,9 +40,9 @@ class _InsertFireStoreScreenState extends State<InsertFireStoreScreen> {
         'age': 25,
         'id': id,
       });
-      Utils().toastMessage('Data added successfully to Firestore');
+      Utils.showToast('Data added successfully to Firestore');
     } catch (error) {
-      Utils().toastMessage('Failed to add data: $error');
+      Utils.showToast('Failed to add data: $error');
     }
   }
 
