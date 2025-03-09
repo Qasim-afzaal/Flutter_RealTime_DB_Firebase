@@ -11,49 +11,41 @@ class AddPostScreen extends StatefulWidget {
 }
 
 class _AddPostScreenState extends State<AddPostScreen> {
-  final postController = TextEditingController();
-  bool loading = false;
-  final databaseRef = FirebaseDatabase.instance.ref('Post');
+  final TextEditingController _postController = TextEditingController();
+  bool _loading = false;
+  final DatabaseReference _databaseRef = FirebaseDatabase.instance.ref('Post');
 
   @override
   void dispose() {
-    postController.dispose();
+    _postController.dispose();
     super.dispose();
   }
 
-  Future<void> addPost() async {
-    if (postController.text.trim().isEmpty) {
+  Future<void> _addPost() async {
+    final String postText = _postController.text.trim();
+    if (postText.isEmpty) {
       Utils.showToast('Please enter some text');
       return;
     }
 
-    setState(() {
-      loading = true;
-    });
+    setState(() => _loading = true);
+    final String id = DateTime.now().millisecondsSinceEpoch.toString();
 
-    String id = DateTime.now().millisecondsSinceEpoch.toString();
     try {
-      await databaseRef.child(id).set({
-        'title': postController.text.trim(),
-        'id': id,
-      });
+      await _databaseRef.child(id).set({'title': postText, 'id': id});
       Utils.showToast('Post added');
-      postController.clear();
+      _postController.clear();
     } catch (error) {
       Utils.showToast(error.toString());
     } finally {
-      setState(() {
-        loading = false;
-      });
+      setState(() => _loading = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Add Post'),
-      ),
+      appBar: AppBar(title: const Text('Add Post')),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20),
         child: Column(
@@ -61,7 +53,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
             const SizedBox(height: 30),
             TextFormField(
               maxLines: 4,
-              controller: postController,
+              controller: _postController,
               decoration: const InputDecoration(
                 hintText: 'What is on your mind?',
                 border: OutlineInputBorder(),
@@ -70,8 +62,8 @@ class _AddPostScreenState extends State<AddPostScreen> {
             const SizedBox(height: 30),
             RoundButton(
               title: 'Add',
-              loading: loading,
-              onTap: addPost,
+              loading: _loading,
+              onTap: _addPost,
             ),
           ],
         ),
