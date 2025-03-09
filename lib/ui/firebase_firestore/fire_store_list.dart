@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:real_time_db_firebase/ui/auth/login_screen.dart';
-import 'package:real_time_db_firebase/ui/firebase_firestore/inser_fire_store.dart';
+import 'package:real_time_db_firebase/ui/firebase_firestore/insert_fire_store.dart';
 import 'package:real_time_db_firebase/utils/utils.dart';
 
 class ShowFireStorePostScreen extends StatefulWidget {
@@ -13,13 +13,9 @@ class ShowFireStorePostScreen extends StatefulWidget {
 }
 
 class _ShowFireStorePostScreenState extends State<ShowFireStorePostScreen> {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  final Stream<QuerySnapshot> _firestoreStream =
-      FirebaseFirestore.instance.collection('users').snapshots();
-  final CollectionReference _usersCollection =
-      FirebaseFirestore.instance.collection('users');
+  final _auth = FirebaseAuth.instance;
+  final _usersCollection = FirebaseFirestore.instance.collection('users');
 
-  /// Signs out the user and navigates back to the Login screen.
   void _signOut() async {
     try {
       await _auth.signOut();
@@ -27,29 +23,51 @@ class _ShowFireStorePostScreenState extends State<ShowFireStorePostScreen> {
         context,
         MaterialPageRoute(builder: (context) => const LoginScreen()),
       );
-    } catch (error) {
-      Utils.showToast(error.toString());
+    } catch (e) {
+      Utils.showToast(e.toString());
     }
   }
 
-  /// Deletes a user document in Firestore.
   Future<void> _deleteUser(String userId) async {
-    try {
-      await _usersCollection.doc(userId).delete();
-      Utils.showToast("User deleted successfully.");
-    } catch (error) {
-      Utils.showToast("Failed to delete user: $error");
+    final confirm = await _showDeleteConfirmationDialog();
+    if (confirm) {
+      try {
+        await _usersCollection.doc(userId).delete();
+        Utils.showToast("User deleted successfully.");
+      } catch (e) {
+        Utils.showToast("Failed to delete user: $e");
+      }
     }
   }
 
-  /// Updates a user's full name in Firestore.
   Future<void> _updateUserName(String userId, String newName) async {
     try {
       await _usersCollection.doc(userId).update({'full_name': newName});
       Utils.showToast("User updated successfully.");
-    } catch (error) {
-      Utils.showToast("Failed to update user: $error");
+    } catch (e) {
+      Utils.showToast("Failed to update user: $e");
     }
+  }
+
+  Future<bool> _showDeleteConfirmationDialog() async {
+    return await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text("Confirm Delete"),
+            content: const Text("Are you sure you want to delete this user?"),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text("Cancel"),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text("Delete", style: TextStyle(color: Colors.red)),
+              ),
+            ],
+          ),
+        ) ??
+        false;
   }
 
   @override
@@ -62,12 +80,11 @@ class _ShowFireStorePostScreenState extends State<ShowFireStorePostScreen> {
             onPressed: _signOut,
             icon: const Icon(Icons.logout_outlined),
           ),
-          const SizedBox(width: 10),
         ],
       ),
       body: StreamBuilder<QuerySnapshot>(
-        stream: _firestoreStream,
-        builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+        stream: _usersCollection.snapshots(),
+        builder: (context, snapshot) {
           if (snapshot.hasError) {
             return const Center(child: Text('Something went wrong.'));
           }
@@ -81,8 +98,8 @@ class _ShowFireStorePostScreenState extends State<ShowFireStorePostScreen> {
           }
 
           return ListView(
-            children: snapshot.data!.docs.map((DocumentSnapshot document) {
-              final data = document.data()! as Map<String, dynamic>;
+            children: snapshot.data!.docs.map((document) {
+              final data = document.data() as Map<String, dynamic>? ?? {};
               final userId = document.id;
 
               return ListTile(
@@ -107,12 +124,10 @@ class _ShowFireStorePostScreenState extends State<ShowFireStorePostScreen> {
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const InsertFireStoreScreen()),
-          );
-        },
+        onPressed: () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const InsertFireStoreScreen()),
+        ),
         child: const Icon(Icons.add),
       ),
     );
