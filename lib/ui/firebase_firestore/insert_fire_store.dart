@@ -12,11 +12,9 @@ class InsertFireStoreScreen extends StatefulWidget {
 }
 
 class _InsertFireStoreScreenState extends State<InsertFireStoreScreen> {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  final CollectionReference _fireStoreCollection =
-      FirebaseFirestore.instance.collection('users');
+  final _auth = FirebaseAuth.instance;
+  final _fireStoreCollection = FirebaseFirestore.instance.collection('users');
 
-  /// Signs out the current user and navigates to the Login screen.
   void _signOut() async {
     try {
       await _auth.signOut();
@@ -24,25 +22,23 @@ class _InsertFireStoreScreenState extends State<InsertFireStoreScreen> {
         context,
         MaterialPageRoute(builder: (context) => const LoginScreen()),
       );
-    } catch (error) {
-      Utils.showToast(error.toString());
+    } catch (e) {
+      Utils.showToast(e.toString());
     }
   }
 
-  /// Adds a new document to Firestore with sample data.
   Future<void> _addFirestoreDocument() async {
-    String id = DateTime.now().millisecondsSinceEpoch.toString();
-
+    final id = DateTime.now().millisecondsSinceEpoch.toString();
     try {
       await _fireStoreCollection.doc(id).set({
-        'full_name': "Sample Name", // Example: John Doe
-        'company': "Sample Company", // Example: Acme Corp
+        'full_name': "Sample Name",
+        'company': "Sample Company",
         'age': 25,
         'id': id,
       });
       Utils.showToast('Data added successfully to Firestore');
-    } catch (error) {
-      Utils.showToast('Failed to add data: $error');
+    } catch (e) {
+      Utils.showToast('Failed to add data: $e');
     }
   }
 
@@ -56,7 +52,6 @@ class _InsertFireStoreScreenState extends State<InsertFireStoreScreen> {
             onPressed: _signOut,
             icon: const Icon(Icons.logout_outlined),
           ),
-          const SizedBox(width: 10),
         ],
       ),
       body: const Center(
