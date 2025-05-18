@@ -1,4 +1,4 @@
-# 📱 **Flutter Social App | Firebase DB** 🌟  
+# 📱 **Flutter Social Sample App | Firebase DB** 🌟  
 
 Welcome to your next-generation **social app**, powered by **Flutter** and **Firebase**! This app makes it easy to connect, share moments, and engage with your community. Below is everything you need to know about the **features** and **tools** that bring this social experience to life. 🚀  
 
